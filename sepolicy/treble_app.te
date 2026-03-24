@@ -39,3 +39,14 @@ binder_call(system_app, hal_gesturewake_default);
 
 type hal_aidl_agolddaemon_default, domain;
 binder_call(system_app, hal_aidl_agolddaemon_default);
+binder_call(hal_aidl_agolddaemon_default, system_app);
+
+# Unihertz 8849 (Tank) projector FPGA sysfs access.
+type sysfs_fpga_spi, fs_type, sysfs_type;
+allow system_app sysfs_fpga_spi:dir r_dir_perms;
+allow system_app sysfs_fpga_spi:file rw_file_perms;
+
+# Unihertz 8849 (Tank) NDS03 laser rangefinder sysfs access.
+type sysfs_nds03, fs_type, sysfs_type;
+allow system_app sysfs_nds03:dir r_dir_perms;
+allow system_app sysfs_nds03:file r_file_perms;
