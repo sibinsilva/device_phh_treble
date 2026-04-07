@@ -847,8 +847,6 @@ if [ -f /system/phh/secure ] || [ -f /metadata/phh/secure ];then
     resetprop_phh ro.boot.veritymode enforcing
     resetprop_phh ro.boot.warranty_bit 0
     resetprop_phh ro.warranty_bit 0
-    resetprop_phh ro.debuggable 0
-    resetprop_phh ro.secure 1
     resetprop_phh ro.build.type user
     resetprop_phh ro.product.build.type user
     resetprop_phh ro.system.build.type user
