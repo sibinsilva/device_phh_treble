@@ -72,6 +72,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     device/phh/treble/rw-system.sh:system/bin/rw-system.sh \
     device/phh/treble/phh-on-boot.sh:system/bin/phh-on-boot.sh \
+    device/phh/treble/power-mode-monitor.sh:system/bin/power-mode-monitor.sh \
     device/phh/treble/phh-on-data.sh:system/bin/phh-on-data.sh \
     device/phh/treble/phh-prop-handler.sh:system/bin/phh-prop-handler.sh \
     device/phh/treble/fixSPL/getSPL.arm:system/bin/getSPL
@@ -214,6 +215,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     debug.fdsan=warn_once \
+    debug.stagefright.c2inputsurface=-1 \
     persist.sys.fflag.override.settings_provider_model=false \
     ro.setupwizard.mode=OPTIONAL \
 
