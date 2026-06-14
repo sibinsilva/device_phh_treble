@@ -5,6 +5,39 @@ vndk="$(getprop persist.sys.vndk)"
 
 [ "$(getprop vold.decrypt)" = "trigger_restart_min_framework" ] && exit 0
 
+# recover USB gadget if the UDC failed to bind during boot.
+# on some exynos devices (e.g. samsung galaxy M33), the dwc3 OTG state
+# machine starts the gadget before init has configured USB functions via
+# configfs, leaving the UDC in a failed state with ENODEV.  cycling
+# sys.usb.config forces the vendor USB init to tear down and rebuild
+# the gadget cleanly.
+#
+# however, on devices with a fingerprint HAL, the USB config cycle can
+# invalidate the TEE session that the fingerprint HAL depends on,
+# breaking fingerprint after every boot without a USB cable.  skip the
+# reset on these devices -- fingerprint is more important than
+# ADB-over-USB on boot (ADB over WiFi still works).
+udc_state="$(cat /config/usb_gadget/g1/UDC 2>/dev/null)"
+if [ -z "$udc_state" ] || [ "$udc_state" = "none" ]; then
+    fp_hal="$(getprop ro.hardware.fingerprint)"
+    if [ -n "$fp_hal" ]; then
+        log -t phh-on-boot "USB gadget not bound, but skipping reset: fingerprint HAL ($fp_hal) detected, reset would break TEE session"
+    else
+        usb_cfg="$(getprop persist.sys.usb.config)"
+        if [ -n "$usb_cfg" ]; then
+            log -t phh-on-boot "USB gadget not bound, retrying config: $usb_cfg"
+            setprop sys.usb.config none
+            sleep 1
+            setprop sys.usb.config "$usb_cfg"
+        fi
+        # Restart fingerprint/biometrics HAL after USB gadget recovery.
+        # The USB config cycle can disconnect the HAL's TEE session,
+        # so restart both services to re-establish it.
+        setprop ctl.restart vendor.fps_hal
+        setprop ctl.restart vendor.biometrics-hal-1
+    fi
+fi
+
 setprop ctl.start media.swcodec
 
 for i in wpa p2p;do
