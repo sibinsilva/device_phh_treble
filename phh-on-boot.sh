@@ -25,6 +25,50 @@ if [ ! -f /sys/fs/fuse/features/fuse_bpf ]; then
     log -t phh-on-boot "Disabled FUSE BPF (kernel fuse_bpf feature absent)"
 fi
 
+# spoof post-boot props
+# should be applied after boot complete to prevent breaking device features
+# pstore-visible boot-progress marker: reaching this point means init
+# processed sys.boot_completed, so zygote and system_server came up
+echo "phhsec: phh-on-boot entered (boot completed)" > /dev/kmsg 2>/dev/null
+if [ ! -f /metadata/securize_disable ]; then
+  echo "phhsec: post-boot identity spoof start" > /dev/kmsg 2>/dev/null
+  resetprop_phh ro.build.user nobody
+  resetprop_phh ro.build.host android-build
+  resetprop_phh ro.build.tags release-keys
+  resetprop_phh ro.product.build.tags release-keys
+  resetprop_phh ro.system.build.tags release-keys
+  resetprop_phh ro.system_ext.build.tags release-keys
+  resetprop_phh ro.vendor.build.tags release-keys
+  resetprop_phh ro.boot.vbmeta.device_state locked
+  resetprop_phh vendor.boot.vbmeta.device_state locked
+  resetprop_phh ro.boot.verifiedbootstate green
+  resetprop_phh vendor.boot.verifiedbootstate green
+  resetprop_phh ro.boot.flash.locked 1
+  resetprop_phh ro.boot.veritymode enforcing
+  resetprop_phh ro.boot.warranty_bit 0
+  resetprop_phh ro.vendor.warranty_bit 0
+  resetprop_phh ro.warranty_bit 0
+  resetprop_phh --delete ro.build.selinux
+  resetprop_phh -n sys.oem_unlock_allowed 0
+  resetprop_phh -n init.svc.flash_recovery stopped
+
+  # update usb gadget strings so the host sees the real product name.
+  # configfs is not guaranteed to be mounted during post-fs, so this runs
+  # here instead of in the boot-critical securize path.
+  model="$(getprop ro.product.model)"
+  manufacturer="$(getprop ro.product.manufacturer)"
+  gadget_strings="/config/usb_gadget/g1/strings/0x409"
+  legacy_usb="/sys/class/android_usb/android0"
+  if [ -d "$gadget_strings" ]; then
+      [ -n "$model" ] && echo "$model" > "$gadget_strings/product"
+      [ -n "$manufacturer" ] && echo "$manufacturer" > "$gadget_strings/manufacturer"
+  elif [ -d "$legacy_usb" ]; then
+      [ -n "$model" ] && echo "$model" > "$legacy_usb/iProduct"
+      [ -n "$manufacturer" ] && echo "$manufacturer" > "$legacy_usb/iManufacturer"
+  fi
+  echo "phhsec: post-boot identity spoof done" > /dev/kmsg 2>/dev/null
+fi
+
 vndk="$(getprop persist.sys.vndk)"
 [ -z "$vndk" ] && vndk="$(getprop ro.vndk.version |grep -oE '^[0-9]+')"
 

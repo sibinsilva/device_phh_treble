@@ -45,6 +45,8 @@ on property:persist.sys.phh.oppo.gaming_mode=*
 on property:sys.phh.oplus.fppress=*
     exec u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "sys.phh.oplus.fppress"
 
+on property:persist.sys.phh.securize=*
+    exec u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "persist.sys.phh.securize"
 
 on property:persist.sys.phh.oppo.usbotg=*
     exec u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "persist.sys.phh.oppo.usbotg"
@@ -138,10 +140,6 @@ service watchdogd-gsi /system/bin/watchdogd 10 20
     oneshot
     disabled
     seclabel u:r:watchdogd:s0
-
-on property:persist.sys.phh.adb_secure=1
-    exec u:r:phhsu_daemon:s0 root -- /system/bin/resetprop_phh ro.adb.secure 1
-    restart adbd
 
 # force software codecs: replicate doissM's CodecFix approach to make the
 # AOSP software codecs (c2.android.*) the only usable encoders/decoders.
