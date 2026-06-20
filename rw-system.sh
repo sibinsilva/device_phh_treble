@@ -779,6 +779,10 @@ if getprop ro.vendor.build.fingerprint | grep -qiE '^samsung/' && [ -n "$vndk" ]
 		[ "$(stat -c '%G' /sys/class/camera/flash/rear_flash)" == "root" ];then
         chown system:system /sys/class/camera/flash/rear_flash
         chcon u:object_r:sysfs_camera_writable:s0 /sys/class/camera/flash/rear_flash
+        # relabel the flash dir itself: hal_camera_default needs search on the
+        # dir to reach rear_flash, and vendors only grant search on
+        # sysfs_camera_writable, not the sysfs_camera label the dir ships with
+        chcon u:object_r:sysfs_camera_writable:s0 /sys/class/camera/flash
     fi
 fi
 
