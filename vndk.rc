@@ -162,3 +162,14 @@ on property:persist.sys.phh.force_sw_codecs=true
     exec u:r:phhsu_daemon:s0 root -- /system/bin/resetprop_phh -n debug.stagefright.ccodec 4
     exec u:r:phhsu_daemon:s0 root -- /system/bin/resetprop_phh -n debug.stagefright.omx_default_rank 0
     exec u:r:phhsu_daemon:s0 root -- /system/bin/resetprop_phh -n media.c2.hal.selection aidl
+
+# OnePlus/OPPO sm8750 (OP6190L1): the QTI wifidisplay HAL looks up
+# android.hardware.audio.core.IModule/default at boot, which lazy-starts the
+# QTI audio HAL before it has finished parsing ACDB config. the half-init'd
+# HAL null-derefs (SIGSEGV at 0x18 in libaudiocorehal.qti.so) and crash-loops,
+# blocking system_server's StartAudioService -> stuck at bootanimation.
+# stop wifidisplayhalservice the moment it starts on this device so the audio
+# HAL can init without the early binder call. wireless display (Miracast) is
+# lost on this device, which beats not booting.
+on property:init.svc.wifidisplayhalservice=running && property:ro.product.device=OP6190L1
+    stop wifidisplayhalservice
