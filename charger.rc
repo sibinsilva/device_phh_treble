@@ -12,6 +12,25 @@ service charger /system/bin/charger
     capabilities SYS_BOOT
     seclabel u:r:charger:s0
 
+# xiaomi pad6 (pipa) offline charging renders a garbled screen: the aosp
+# healthd charger's minui drm path mismatches this 1800x2880 sde/dsi panel
+# (ro.minui.pixel_format is already correct, so the garble is in mode/stride/
+# backend selection in shared recovery minui code, not safely fixable blind).
+# until a proper render fix is developed on a dev device, suppress the charger
+# ui so charging proceeds without the garbled screen.
+#
+# this must run in charger mode, before class_start charger (rootdir/init.rc).
+# rw-system.sh is no use here: it runs at on post-fs, which is triggered by
+# late-init, and init.cpp queues on charger instead of late-init in charger
+# mode, so post-fs never fires and rw-system.sh never runs. on init fires in
+# both charger and normal boot (init.cpp queues it before the charger/
+# late-init branch), ro.product.device is loaded from build.prop before on
+# init fires, and setprop is an init builtin so no /system exec is needed.
+# ro.charger.no_ui makes charger.cpp run healthd_charger_nops (no rendering,
+# charging continues).
+on init && property:ro.product.device=pipa
+    setprop ro.charger.no_ui true
+
 on charger && property:ro.hardware=mt*
     write /sys/class/leds/lcd-backlight/trigger "backlight"
     write /sys/class/android_usb/android0/enable 1
