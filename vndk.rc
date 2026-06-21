@@ -173,3 +173,6 @@ on property:persist.sys.phh.force_sw_codecs=true
 # lost on this device, which beats not booting.
 on property:init.svc.wifidisplayhalservice=running && property:ro.product.device=OP6190L1
     stop wifidisplayhalservice
+
+on property:persist.sys.phh.lmk_tweaks=*
+    exec u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "persist.sys.phh.lmk_tweaks"

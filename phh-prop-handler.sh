@@ -297,3 +297,45 @@ if [ "$1" == "persist.bluetooth.system_audio_hal.enabled" ]; then
     restartAudio
     exit
 fi
+
+if [ "$1" == "persist.sys.phh.lmk_tweaks" ]; then
+    if [[ "$prop_value" != "false" && "$prop_value" != "true" ]]; then
+        exit 1
+    fi
+    if [[ "$prop_value" == "true" ]]; then
+        # aggressive lmkd + background-app limits: free foreground headroom on
+        # low-RAM devices (e.g. kernel-4.9 GSIs where isolated renderers get
+        # OOM-reaped, #92). overrides the GSI's system.prop lmkd defaults.
+        resetprop_phh ro.lmk.use_minfree_levels true
+        resetprop_phh ro.lmk.kill_timeout_ms 100
+        resetprop_phh ro.lmk.low 1001
+        resetprop_phh ro.lmk.medium 800
+        resetprop_phh ro.lmk.critical 0
+        resetprop_phh ro.lmk.kill_heaviest_task true
+        resetprop_phh ro.lmk.critical_upgrade false
+        resetprop_phh ro.lmk.upgrade_pressure 100
+        resetprop_phh ro.lmk.downgrade_pressure 250
+        resetprop_phh ro.lmk.psi_partial_stall_ms 200
+        resetprop_phh ro.lmk.psi_complete_stall_ms 700
+        resetprop_phh ro.sys.fw.bg_apps_limit 16
+        resetprop_phh ro.config.max_starting_bg 8
+    else
+        # off: remove the overrides so the GSI's system.prop lmkd defaults
+        # apply again.
+        resetprop_phh --delete ro.lmk.use_minfree_levels
+        resetprop_phh --delete ro.lmk.kill_timeout_ms
+        resetprop_phh --delete ro.lmk.low
+        resetprop_phh --delete ro.lmk.medium
+        resetprop_phh --delete ro.lmk.critical
+        resetprop_phh --delete ro.lmk.kill_heaviest_task
+        resetprop_phh --delete ro.lmk.critical_upgrade
+        resetprop_phh --delete ro.lmk.upgrade_pressure
+        resetprop_phh --delete ro.lmk.downgrade_pressure
+        resetprop_phh --delete ro.lmk.psi_partial_stall_ms
+        resetprop_phh --delete ro.lmk.psi_complete_stall_ms
+        resetprop_phh --delete ro.sys.fw.bg_apps_limit
+        resetprop_phh --delete ro.config.max_starting_bg
+    fi
+    setprop ctl.restart lmkd
+    exit
+fi
