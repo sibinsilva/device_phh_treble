@@ -202,6 +202,14 @@ changeKeylayout() {
         changed=true
     fi
 
+    # xiaomi pad6 (pipa) ships a CHRE keyboardnanoapp + hall sensor that register
+    # two alphabetic input devices even with the keyboard cover detached, which
+    # forces Configuration.keyboard=QWERTY and makes soft IMEs hide their keys.
+    # gate the DisplayContent workaround behind this property.
+    if getprop ro.vendor.build.fingerprint | grep -iq -e xiaomi/pipa; then
+        setprop persist.sys.phh.disable_fake_hw_keyboard true
+    fi
+
     if getprop ro.vendor.build.fingerprint |grep -iq -e samsung/a10sxx;then
         mkdir -p /data/vendor/mcRegistry
         chown system /data/vendor/mcRegistry
