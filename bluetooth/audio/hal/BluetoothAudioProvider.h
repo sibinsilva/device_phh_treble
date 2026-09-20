@@ -127,6 +127,16 @@ class BluetoothAudioProvider : public BnBluetoothAudioProvider {
           in_streamMap,
       ::aidl::android::hardware::bluetooth::audio::IBluetoothAudioProvider::
           LeAudioDataPathConfiguration* _aidl_return) override;
+  ndk::ScopedAStatus getLeAudioAseCodecConfiguredParameters(
+      const std::optional<std::vector<std::optional<
+          ::aidl::android::hardware::bluetooth::audio::LeAudioAseConfiguration>>>&
+          in_sinkAseConfiguration,
+      const std::optional<std::vector<std::optional<
+          ::aidl::android::hardware::bluetooth::audio::LeAudioAseConfiguration>>>&
+          in_sourceAseConfiguration,
+      std::optional<::aidl::android::hardware::bluetooth::audio::
+                        IBluetoothAudioProvider::LeAudioAseCodecConfiguredResponse>*
+          _aidl_return) override;
 
   ndk::ScopedAStatus parseA2dpConfiguration(
       const CodecId& codec_id, const std::vector<uint8_t>& configuration,
