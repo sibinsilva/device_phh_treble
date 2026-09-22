@@ -1,4 +1,5 @@
 service phh-ota-make /system/bin/phh-ota new-slot
+	user root
 	seclabel u:r:phhsu_daemon:s0
 	disabled
 	oneshot

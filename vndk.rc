@@ -13,10 +13,12 @@ on early-boot
     exec - root -- /system/bin/phh-on-data.sh
 
 service phh_on_boot /system/bin/phh-on-boot.sh
+    user root
     oneshot
     disabled
 
 service power_mode_monitor /system/bin/power-mode-monitor.sh
+    user root
     oneshot
     disabled
     seclabel u:r:phhsu_daemon:s0
@@ -128,6 +130,7 @@ on property:persist.sys.phh.dynamic_fps=*
 
 # Set watchdog timer to 30 seconds and pet it every 10 seconds to get a 20 second margin
 service watchdogd-gsi /system/bin/watchdogd 10 20
+    user root
     class core
     oneshot
     disabled

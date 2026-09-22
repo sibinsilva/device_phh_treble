@@ -10,4 +10,5 @@ on property:persist.sys.phh.remote=false
 
 
 service phh-remotectl /system/bin/phh-remotectl.sh
+   user root
    seclabel u:r:phhsu_daemon:s0

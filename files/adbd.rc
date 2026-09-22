@@ -1,4 +1,5 @@
 service adbd_system /system/bin/adbd --root_seclabel=u:r:su:s0
+	user root
 	class core
 	socket adbd stream 660 system system
 	disabled
