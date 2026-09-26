@@ -1096,7 +1096,6 @@ if getprop ro.bionic.cpu_variant |grep -q kryo300;then
     setprop dalvik.vm.isa.arm64.features runtime
 fi
 
-resetprop_phh ro.control_privapp_permissions log
 
 if [ -f /vendor/etc/init/vendor.ozoaudio.media.c2@1.0-service.rc ];then
     if [ "$vndk" -le 29 ]; then
