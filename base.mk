@@ -156,7 +156,8 @@ PRODUCT_COPY_FILES += \
     device/phh/treble/00-fix-metadata.rc:system/etc/init/00-fix-metadata.rc \
     device/phh/treble/00-fix-metadata.sh:system/etc/00-fix-metadata.sh \
     device/phh/treble/8849-proinfo.rc:system/etc/init/8849-proinfo.rc \
-    device/phh/treble/8849-proinfo.sh:system/etc/8849-proinfo.sh
+    device/phh/treble/8849-proinfo.sh:system/etc/8849-proinfo.sh \
+    device/phh/treble/ion.rc:system/etc/init/ion.rc
 
 # MTK incoming SMS fix
 PRODUCT_PACKAGES += \

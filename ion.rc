@@ -1,0 +1,8 @@
+# legacy vendor grallocs (e.g. mtk) still allocate through /dev/ion; the
+# platform dma-buf migration dropped both the file label and any lenient
+# node permissions, so on gsi boots the allocator can fail to open the
+# node with a silent EPERM -- buffer allocation fails and renderengine
+# then aborts on the non-gpu-writable buffer, crash looping the boot.
+on post-fs
+    restorecon /dev/ion
+    chmod 0666 /dev/ion
