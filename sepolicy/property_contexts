@@ -1,3 +1,6 @@
 persist.sys.sf.hs_mode         u:object_r:sf_hs_mode_prop:s0
 hwc.exynos.vsync_mode      u:object_r:vendor_hwc_prop:s0
 sys.phh.oplus.fppress    u:object_r:phh_oplus_prop:s0
+persist.sys.phh.samsung.remosaic u:object_r:phh_samsung_camera_prop:s0
+persist.sys.phh.samsung.video60 u:object_r:phh_samsung_camera_prop:s0
+persist.sys.phh.samsung.video60_grapheneos u:object_r:phh_samsung_camera_prop:s0
