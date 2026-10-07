@@ -52,3 +52,7 @@ type phh_samsung_camera_prop, property_type;
 set_prop(system_app, phh_samsung_camera_prop);
 set_prop(platform_app, phh_samsung_camera_prop);
 get_prop(cameraserver, phh_samsung_camera_prop);
+
+# scsc libbt-vendor sets the unlabeled vendor.bluetooth_fw_ver after every vendor op
+type hal_bluetooth_default, domain;
+allow hal_bluetooth_default vendor_default_prop:property_service set;
