@@ -262,6 +262,17 @@ changeKeylayout() {
         changed=true
     fi
 
+    # unihertz jelly max: the mtk camera hal enumerates the aux (telephoto)
+    # sensor only when told to, and caches the camera list across provider
+    # restarts, so the telephoto never appears on the gsi (#32). the props
+    # must be in place before the camera hal starts; phh-on-boot additionally
+    # restarts the camera daemons in case anything raced us.
+    if getprop ro.vendor.build.fingerprint | grep -q -e Unihertz/;then
+        resetprop_phh persist.vendor.camera.privapp.list "*"
+        resetprop_phh vendor.camera.aux.packagelist "*"
+        resetprop_phh vendor.camera.aux.enable 1
+    fi
+
     if getprop ro.vendor.build.fingerprint | grep -q -i -e Blackview/BV9500Plus -e Ulefone/Armor_9 -e Blackview/BV9800;then
         cp /system/phh/bv9500plus-mtk-kpd.kl /mnt/phh/keylayout/mtk-kpd.kl
         chmod 0644 /mnt/phh/keylayout/mtk-kpd.kl

@@ -154,3 +154,10 @@ getprop | \
     while read -r svc ;do
         setprop ctl.stop "$svc"
     done
+
+# unihertz jelly max: re-run camera enumeration in case the hal started
+# before rw-system set the aux props; best effort, the props alone are
+# usually enough (see the camera block in rw-system)
+if getprop ro.vendor.build.fingerprint | grep -q -e Unihertz/;then
+    killall camerahalserver cameraserver 2>/dev/null || true
+fi
