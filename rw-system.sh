@@ -592,6 +592,11 @@ if [ -n "$vndk" ] && { [ "$vndk" = 27 ] || [ "$vndk" = 26 ]; }; then
     mount -o bind /system/phh/libnfc-nci-oreo.conf /system/etc/libnfc-nci.conf
 fi
 
+# some vendor nfc firmwares (e.g. PN553) never answer android's GET_CAPS (2F0C), the cmd timeout loops nfc through recovery
+if [ -z "$(getprop ro.nfc.get_caps_supported)" ]; then
+    resetprop_phh ro.nfc.get_caps_supported false
+fi
+
 if busybox_phh unzip -p /vendor/app/ims/ims.apk classes.dex | grep -qF -e Landroid/telephony/ims/feature/MmTelFeature -e Landroid/telephony/ims/feature/MMTelFeature; then
     mount -o bind /mnt/phh/empty /vendor/app/ims/ims.apk
 fi
