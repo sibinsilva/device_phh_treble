@@ -6,6 +6,12 @@ allow init mnt_product_file:dir mounton;
 
 type mtk_hal_audio, domain;
 typeattribute mtk_hal_audio hal_broadcastradio_client;
+allow mtk_hal_audio audioserver:fifo_file write;
+allow mtk_hal_audio untrusted_app:fifo_file write;
+allow hal_audio_sysbta untrusted_app:fifo_file write;
+
+type mtk_hal_light, domain;
+typeattribute mtk_hal_light hal_light_server;
 
 type mtk_hal_power, domain;
 allow mtk_hal_power system_data_root_file:file create_file_perms;
@@ -27,3 +33,26 @@ permissive tkcore;
 
 allow platform_app sysfs_leds:dir r_dir_perms;
 allow platform_app sysfs_leds:file r_file_perms;
+
+
+# Needed for headphone detection when opening /bus/platform/drivers/pmic-codec-accdet/state
+allow mtk_hal_audio sysfs:file r_file_perms;
+
+# MTK fuel-gauge NVRAM loader (fuelgauged_nvram) traverses the DT firmware
+# sysfs tree to load gauge calibration. the GSI system policy lacks the allow,
+# so SELinux denies the search and the gauge reports a hardcoded 48% until
+# coulomb counters resync (#69). sysfs_dt_firmware_android is system-public
+# (system/sepolicy/public/file.te); fuelgauged_nvram is an MTK vendor domain
+# re-declared here so the allow is visible to system_ext -- secilc -m unifies
+# it with the vendor's own declaration at boot, so the vendor's existing rules
+# for the domain are preserved. on non-MTK vendors the type is unused (no
+# process is assigned to it) so this is a harmless no-op.
+type fuelgauged_nvram, domain;
+allow fuelgauged_nvram sysfs_dt_firmware_android:dir r_dir_perms;
+allow fuelgauged_nvram sysfs_dt_firmware_android:file r_file_perms;
+allow fuelgauged_nvram sysfs_dt_firmware_android:lnk_file r_file_perms;
+
+# unihertz: the camera hal hides the aux cameras until cameraserver calls setNotGsi on agolddaemon
+type hal_aidl_agolddaemon_service, service_manager_type;
+allow cameraserver hal_aidl_agolddaemon_service:service_manager find;
+binder_call(cameraserver, hal_aidl_agolddaemon_default);
