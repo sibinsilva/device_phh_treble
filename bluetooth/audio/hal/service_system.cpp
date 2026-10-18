@@ -37,6 +37,8 @@ using ::aidl::android::hardware::bluetooth::audio::
 #define HAL_LIBRARY_PATH "/system/lib/hw"
 #endif
 
+void registerAudioModule();
+
 void registerAudioInterfaces() {
   const char *interface_libs[] = {
     "android.hardware.audio@2.0-impl-system.so",
@@ -87,6 +89,7 @@ int main() {
   // We must also implement audio HAL interfaces in order to serve audio.sysbta.default.so
   // It must be served in the *same* process to access the same libbluetooth_audio_session
   registerAudioInterfaces();
+  registerAudioModule();
 
   ::android::hardware::joinRpcThreadpool();
 }

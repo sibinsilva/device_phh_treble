@@ -4,6 +4,11 @@
         <version>4</version>
         <fqname>IBluetoothAudioProviderFactory/sysbta</fqname>
     </hal>
+    <hal format="aidl">
+        <name>android.hardware.audio.core</name>
+        <version>4</version>
+        <fqname>IModule/sysbta</fqname>
+    </hal>
     <hal>
         <name>android.hardware.audio</name>
         <transport>hwbinder</transport>

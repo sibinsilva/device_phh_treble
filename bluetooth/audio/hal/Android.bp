@@ -16,15 +16,27 @@ cc_binary {
         "HfpSoftwareAudioProvider.cpp",
         "LeAudioOffloadAudioProvider.cpp",
         "LeAudioSoftwareAudioProvider.cpp",
+        "ModuleSysbta.cpp",
         "service_system.cpp",
     ],
     header_libs: [
+        "libaudio_system_headers",
+        "libaudioaidl_headers",
         "libhardware_headers",
     ],
     defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_hardware_audio_core_sounddose_ndk_shared",
         "latest_android_hardware_bluetooth_audio_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
+    static_libs: [
+        "libaudioserviceexampleimpl_system",
     ],
     shared_libs: [
+        "libaudio_aidl_conversion_common_ndk",
+        "libaudioaidlcommon",
+        "libaudioutils",
         "libbase",
         "libbinder",
         "libbinder_ndk",
@@ -32,8 +44,15 @@ cc_binary {
         "libfmq",
         "libhidlbase",
         "liblog",
+        "libmedia_helper",
+        "libstagefright_foundation",
         "libutils",
         "libbluetooth_audio_session_aidl_system",
+        "android.hardware.common-V2-ndk",
+        "android.hardware.common.fmq-V1-ndk",
+    ],
+    cflags: [
+        "-DBACKEND_NDK",
     ],
     required: [
         // Audio HAL impls

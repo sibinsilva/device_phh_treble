@@ -8,3 +8,6 @@ hal_client_domain(hal_audio_sysbta, hal_allocator)
 
 # allow audioserver to call hal_audio dump with its own fd to retrieve status
 allow hal_audio_sysbta audioserver:fifo_file write;
+
+# AIDL IModule stream workers run at audio priority
+allow hal_audio_sysbta self:global_capability_class_set sys_nice;
