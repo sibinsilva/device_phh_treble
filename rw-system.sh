@@ -377,6 +377,12 @@ if ! getprop ro.product.vendor.model | grep -q -e oppo6771; then
     fixSPL
 fi
 
+# keymaster 3.0 can't register until qseecomd is up, some vendors only start it with class core on boot, which never comes since vold waits for keystore2
+if [ -f /vendor/bin/qseecomd ] && [ -f /vendor/bin/hw/android.hardware.keymaster@3.0-service ]; then
+    setprop ctl.start qseecomd
+    setprop ctl.start vendor.qseecomd
+fi
+
 changeKeylayout
 
 mount /mnt/phh/empty /vendor/bin/vendor.samsung.security.proca@1.0-service || true
