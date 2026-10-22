@@ -154,7 +154,7 @@ if [ "$1" == "sys.phh.oplus.fppress" ]; then
             echo "35389440,122814464" > /proc/driver/fp_xy 2>/dev/null || true
         fi
         if [ -e /data/vendor/fp_xy ]; then
-            echo "35389440,122814464" > /proc/driver/fp_xy 2>/dev/null || true
+            echo "35389440,122814464" > /data/vendor/fp_xy 2>/dev/null || true
         fi
     fi
     exit
