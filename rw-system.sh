@@ -1042,7 +1042,10 @@ if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I006D -e ASUS_I005 -e 
 		if [ -z "$(getprop ro.product.marketname)" ];then
 			resetprop_phh ro.product.marketname "ASUS ROG Phone 5"
 		fi
-		mount -o bind /mnt/phh/empty /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service
+		# Do not disable the vendor @2.1-service: the same binary also
+		# publishes IGoodixFingerprintDaemon, which anakin wraps. Killing
+		# it deadlocks anakin before registerAsService() and the framework
+		# then sees no fingerprint HAL at all.
 		cp /system/etc/vintf/manifest.xml /mnt/phh/manifest.xml
 		sed -i 's/@2.1::IBiometricsFingerprint/@2.3::IBiometricsFingerprint/g' /mnt/phh/manifest.xml
 		chmod 644 /mnt/phh/manifest.xml
