@@ -253,6 +253,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     QcRilAm
 
+# screen attention: keeps the screen on while a face is in front of the camera
+PRODUCT_PACKAGES += \
+    RestlessAttention
+PRODUCT_COPY_FILES += \
+    device/phh/treble/attention/privapp-permissions-com.restlessos.attention.xml:system/etc/permissions/privapp-permissions-com.restlessos.attention.xml
+
 PRODUCT_PACKAGES += \
     slsi-booted \
     Iwlan \

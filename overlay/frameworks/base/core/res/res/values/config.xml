@@ -57,4 +57,9 @@
     <string name="config_wlan_network_service_package">com.google.android.iwlan</string>
   <string name="config_qualified_networks_service_package">com.android.telephony.qns</string>
   <bool name="config_lidControlsSleep">true</bool>
+
+  <bool name="config_adaptive_sleep_available">true</bool>
+  <string name="config_defaultAttentionService" translatable="false">com.restlessos.attention/.FaceAttentionService</string>
+  <!-- role holders are exempt from the camera privacy indicator -->
+  <string name="config_systemVisualIntelligence" translatable="false">com.restlessos.attention</string>
 </resources>

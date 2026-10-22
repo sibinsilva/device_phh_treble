@@ -1,0 +1,10 @@
+android_app {
+    name: "RestlessAttention",
+    srcs: ["src/**/*.java"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "system_current",
+    privileged: true,
+    optimize: {
+        enabled: true,
+    },
+}
