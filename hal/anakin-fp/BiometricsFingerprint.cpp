@@ -275,7 +275,7 @@ BiometricsFingerprint::BiometricsFingerprint() : mClientCallback(nullptr), mDevi
         ALOGE("Can't open HAL module");
     }
     patchGoodixCoordinatePath();
-    this->mGoodixFingerprintDaemon = IGoodixFingerprintDaemon::getService();
+    this->mGoodixFingerprintDaemon = IGoodixFingerprintDaemon::tryGetService();
 
     std::thread([this]() {
         while (true) {
