@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lunaris_device_message" translatable="false">ASUS ROG Phone 5</string>
+    <string name="lunaris_processor_code_message" translatable="false">Snapdragon® 888 5G</string>
+    <string name="lunaris_battery_type_message" translatable="false">6000 mAh</string>
+    <string name="lunaris_screen_message" translatable="false">6.78" AMOLED 144Hz</string>
+</resources>

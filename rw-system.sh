@@ -869,6 +869,10 @@ if [ ! -f /metadata/securize_disable ]; then
     copyprop ro.product.system.manufacturer ro.product.vendor.manufacturer
     copyprop ro.product.product.manufacturer ro.product.vendor.manufacturer
     copyprop ro.product.system_ext.manufacturer ro.product.vendor.manufacturer
+    copyprop ro.product.marketname ro.vendor.product.marketname
+    copyprop ro.product.marketname ro.product.vendor.marketname
+    copyprop ro.product.marketname ro.product.odm.marketname
+    copyprop ro.product.marketname ro.vendor.asus.product.mkt_name
 
     # spoof security-sensitive props early so root detection apps cannot read
     # the real values before phh-on-boot.sh reinforces them post-boot
@@ -1035,6 +1039,9 @@ fi
 if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I006D -e ASUS_I005 -e ASUS_I003;then
 	setprop persist.sys.phh.fod.asus true
 	if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I005;then
+		if [ -z "$(getprop ro.product.marketname)" ];then
+			resetprop_phh ro.product.marketname "ASUS ROG Phone 5"
+		fi
 		mount -o bind /mnt/phh/empty /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service
 		cp /system/etc/vintf/manifest.xml /mnt/phh/manifest.xml
 		sed -i 's/@2.1::IBiometricsFingerprint/@2.3::IBiometricsFingerprint/g' /mnt/phh/manifest.xml
