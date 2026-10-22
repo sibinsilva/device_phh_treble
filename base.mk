@@ -200,12 +200,6 @@ PRODUCT_COPY_FILES += \
     device/phh/treble/privapp-permissions-me.phh.treble.app.xml:system/etc/permissions/privapp-permissions-me.phh.treble.app.xml \
     device/phh/treble/sysconfig-me.phh.treble.app.xml:system/etc/sysconfig/sysconfig-me.phh.treble.app.xml
 
-# Remote debugging
-PRODUCT_COPY_FILES += \
-    device/phh/treble/remote/dbclient:system/bin/dbclient \
-    device/phh/treble/remote/phh-remotectl.rc:system/etc/init/phh-remotectl.rc \
-    device/phh/treble/remote/phh-remotectl.sh:system/bin/phh-remotectl.sh \
-
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.oppo.compat \
     android.hardware.biometrics.fingerprint@2.1-service.oplus.compat \
