@@ -17,6 +17,7 @@
 #define LOG_TAG "android.hardware.biometrics.fingerprint@2.3-service.anakin"
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <hidl/HidlTransportSupport.h>
 
 #include "BiometricsFingerprint.h"
@@ -30,6 +31,11 @@ using android::sp;
 using android::status_t;
 
 int main() {
+    std::string vendorFp = android::base::GetProperty("ro.vendor.build.fingerprint", "");
+    if (vendorFp.find("ASUS_I005") == std::string::npos) {
+        return 0;
+    }
+
     sp<BiometricsFingerprint> biometricsFingerprint;
     status_t status;
 
