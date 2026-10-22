@@ -9,8 +9,8 @@ TARGET_BOOT_ANIMATION_RES := 720
 TARGET_HAS_UDFPS:= false
 
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
-    ro.circle.maintainer=Doze-off
+    ro.circle.maintainer=Sibieeeee
 
-CIRCLE_MAINTAINER := Doze-off
+CIRCLE_MAINTAINER := Sibieeeee
 TARGET_DISABLE_EPPE := true
 PERF_ANIM_OVERRIDE := false

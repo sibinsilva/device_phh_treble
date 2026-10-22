@@ -8,7 +8,7 @@ $(call inherit-product, device/lineage/sepolicy/common/sepolicy.mk)
 TARGET_SCREEN_WIDTH := 1080
 TARGET_SCREEN_HEIGHT := 1920
 
-AXION_MAINTAINER := Doze-off
+AXION_MAINTAINER := Sibieeeee
 TARGET_DISABLE_EPPE := true
 
 TARGET_INCLUDE_AXFX := true

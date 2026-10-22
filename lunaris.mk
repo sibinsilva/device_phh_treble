@@ -9,7 +9,7 @@ TARGET_BOOT_ANIMATION_RES := 1080
 
 TARGET_DISABLE_EPPE := true
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
-    ro.lunaris.maintainer=Doze-off
+    ro.lunaris.maintainer=Sibieeeee
 
 TARGET_SUPPORTED_REFRESH_RATES := 60,90,120,144
 WITH_BCR := true
