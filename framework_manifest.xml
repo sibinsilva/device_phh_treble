@@ -9,5 +9,18 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <!-- anakin (ASUS ROG Phone 5 UDFPS) registers as 2.3 for onFingerDown/onFingerUp/
+         isUdfps; without a matching framework manifest entry the version is not
+         declared compatible anywhere, so the framework's cast-up to V2_3 to deliver
+         UDFPS touch events fails and the overlay callback is never wired up. -->
+    <hal>
+        <name>android.hardware.biometrics.fingerprint</name>
+        <transport>hwbinder</transport>
+        <version>2.3</version>
+        <interface>
+            <name>IBiometricsFingerprint</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
 </manifest>
 
