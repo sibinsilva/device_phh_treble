@@ -128,6 +128,18 @@ if [ -e /sys/block/zram0 ] && ! grep -qE '^/' /proc/swaps 2>/dev/null; then
     fi
 fi
 
+# redmi pad (yunluo): the novatek touch driver loads its firmware ~15s after
+# probe, but surfaceflinger power cycles the panel well before that. the
+# driver refuses the resume without firmware, then the delayed download hits
+# a sleeping IC and fails, leaving touch dead until the next screen off/on,
+# whose resume path reloads the firmware. do that cycle once here (#104).
+if [ -e /proc/nvt_fw_version ] && getprop ro.vendor.build.fingerprint | grep -q -e /yunluo;then
+    input keyevent KEYCODE_SLEEP
+    sleep 1
+    input keyevent KEYCODE_WAKEUP
+    log -t phh-on-boot "cycled the screen to reload the novatek touch firmware"
+fi
+
 sleep 10
 
 minijailSrc=/system/system_ext/apex/com.android.vndk.v28/lib/libminijail.so
