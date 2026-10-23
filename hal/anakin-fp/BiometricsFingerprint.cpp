@@ -147,7 +147,7 @@ static bool patchGoodixCoordinatePath() {
     return result.patched;
 }
 
-static bool writeGoodixTouchXY(uint32_t x, uint32_t y) {
+static bool writeGoodixTouchXY(const char* path, uint32_t x, uint32_t y) {
     const uint32_t fixedX = x << 16;
     const uint32_t fixedY = y << 16;
     char coordinates[64];
@@ -158,10 +158,12 @@ static bool writeGoodixTouchXY(uint32_t x, uint32_t y) {
         return false;
     }
 
-    const int fd = open(GOODIX_USER_FP_XY_PATH,
-            O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);
+    // The proc node is the Goodix driver's own file; never create or truncate it.
+    const bool procNode = strcmp(path, GOODIX_PROC_FP_XY_PATH) == 0;
+    const int fd = procNode ? open(path, O_WRONLY | O_CLOEXEC)
+            : open(path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);
     if (fd < 0) {
-        ALOGE("cannot open %s: %s", GOODIX_USER_FP_XY_PATH, strerror(errno));
+        ALOGE("cannot open %s: %s", path, strerror(errno));
         return false;
     }
 
@@ -169,7 +171,7 @@ static bool writeGoodixTouchXY(uint32_t x, uint32_t y) {
     const int savedErrno = errno;
     close(fd);
     if (written != length) {
-        ALOGE("cannot write %s: %s", GOODIX_USER_FP_XY_PATH,
+        ALOGE("cannot write %s: %s", path,
                 written < 0 ? strerror(savedErrno) : "short write");
         return false;
     }
@@ -268,11 +270,68 @@ static bool waitForHbm(const std::atomic<bool>& fingerDown,
     return false;
 }
 
+// Wraps the framework callback when the vendor service does the real work.
+// On finger down the Goodix HAL immediately reports ACQUIRED_VENDOR ("finger
+// detected"), which SystemUI treats as "capture finished" and so removes the
+// UDFPS illumination dot before the image is taken (-> IMAGER_DIRTY). The
+// framework can't interpret these vendor codes anyway, so drop them.
+class VendorCallbackFilter : public IBiometricsFingerprintClientCallback {
+  public:
+    explicit VendorCallbackFilter(const sp<IBiometricsFingerprintClientCallback>& client)
+        : mClient(client) {}
+
+    Return<void> onEnrollResult(uint64_t deviceId, uint32_t fingerId, uint32_t groupId,
+            uint32_t remaining) override {
+        return mClient->onEnrollResult(deviceId, fingerId, groupId, remaining);
+    }
+
+    Return<void> onAcquired(uint64_t deviceId, FingerprintAcquiredInfo acquiredInfo,
+            int32_t vendorCode) override {
+        if (acquiredInfo == FingerprintAcquiredInfo::ACQUIRED_VENDOR) {
+            ALOGD("dropping vendor acquired message %d", vendorCode);
+            return Void();
+        }
+        return mClient->onAcquired(deviceId, acquiredInfo, vendorCode);
+    }
+
+    Return<void> onAuthenticated(uint64_t deviceId, uint32_t fingerId, uint32_t groupId,
+            const hidl_vec<uint8_t>& token) override {
+        return mClient->onAuthenticated(deviceId, fingerId, groupId, token);
+    }
+
+    Return<void> onError(uint64_t deviceId, FingerprintError error, int32_t vendorCode) override {
+        return mClient->onError(deviceId, error, vendorCode);
+    }
+
+    Return<void> onRemoved(uint64_t deviceId, uint32_t fingerId, uint32_t groupId,
+            uint32_t remaining) override {
+        return mClient->onRemoved(deviceId, fingerId, groupId, remaining);
+    }
+
+    Return<void> onEnumerate(uint64_t deviceId, uint32_t fingerId, uint32_t groupId,
+            uint32_t remaining) override {
+        return mClient->onEnumerate(deviceId, fingerId, groupId, remaining);
+    }
+
+  private:
+    sp<IBiometricsFingerprintClientCallback> mClient;
+};
+
 BiometricsFingerprint::BiometricsFingerprint() : mClientCallback(nullptr), mDevice(nullptr) {
     sInstance = this; // keep track of the most recent instance
     mDevice = openHal();
     if (!mDevice) {
         ALOGE("Can't open HAL module");
+        // The vendor @2.1-service already owns the Goodix sensor and TEE app.
+        // service.cpp waits for it before we register, so this lookup still
+        // resolves to the vendor object; forward the 2.1 calls to it.
+        mVendorHal = ::android::hardware::biometrics::fingerprint::V2_1::
+                IBiometricsFingerprint::tryGetService();
+        if (mVendorHal != nullptr) {
+            ALOGI("forwarding fingerprint 2.1 calls to the vendor service");
+        } else {
+            ALOGE("vendor fingerprint service unavailable, 2.1 calls will fail");
+        }
     }
     patchGoodixCoordinatePath();
     this->mGoodixFingerprintDaemon = IGoodixFingerprintDaemon::tryGetService();
@@ -423,7 +482,10 @@ Return<void> BiometricsFingerprint::onFingerDown(uint32_t x, uint32_t y,
     mCommandQueue.clear();
     ALOGD("finger down x=%u y=%u minor=%f major=%f sequence=%" PRIu64,
             x, y, minor, major, sequence);
-    writeGoodixTouchXY(x, y);
+    // With the vendor service owning libgf_hal, its coordinate path was never
+    // redirected, so feed the driver's original node instead.
+    writeGoodixTouchXY(mVendorHal != nullptr ? GOODIX_PROC_FP_XY_PATH
+            : GOODIX_USER_FP_XY_PATH, x, y);
     requestHbm(true);
     mCommandQueue.push_back({sequence, CMD_FINGER_DOWN});
     lock.unlock();
@@ -549,6 +611,10 @@ Return<uint64_t> BiometricsFingerprint::setNotify(
         const sp<IBiometricsFingerprintClientCallback>& clientCallback) {
     std::lock_guard<std::mutex> lock(mClientCallbackMutex);
     mClientCallback = clientCallback;
+    if (mDevice == nullptr && mVendorHal != nullptr) {
+        return mVendorHal->setNotify(clientCallback == nullptr ? nullptr
+                : new VendorCallbackFilter(clientCallback));
+    }
     // This is here because HAL 2.3 doesn't have a way to propagate a
     // unique token for its driver. Subsequent versions should send a unique
     // token for each call to setNotify(). This is fine as long as there's only
@@ -558,6 +624,9 @@ Return<uint64_t> BiometricsFingerprint::setNotify(
 
 Return<uint64_t> BiometricsFingerprint::preEnroll()  {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->preEnroll();
+        }
         ALOGE("preEnroll: mDevice is null, no legacy fingerprint module loaded");
         return 0;
     }
@@ -567,6 +636,9 @@ Return<uint64_t> BiometricsFingerprint::preEnroll()  {
 Return<RequestStatus> BiometricsFingerprint::enroll(const hidl_array<uint8_t, 69>& hat,
         uint32_t gid, uint32_t timeoutSec) {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->enroll(hat, gid, timeoutSec);
+        }
         ALOGE("enroll: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }
@@ -577,6 +649,9 @@ Return<RequestStatus> BiometricsFingerprint::enroll(const hidl_array<uint8_t, 69
 
 Return<RequestStatus> BiometricsFingerprint::postEnroll() {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->postEnroll();
+        }
         ALOGE("postEnroll: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }
@@ -585,6 +660,9 @@ Return<RequestStatus> BiometricsFingerprint::postEnroll() {
 
 Return<uint64_t> BiometricsFingerprint::getAuthenticatorId() {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->getAuthenticatorId();
+        }
         ALOGE("getAuthenticatorId: mDevice is null, no legacy fingerprint module loaded");
         return 0;
     }
@@ -593,6 +671,9 @@ Return<uint64_t> BiometricsFingerprint::getAuthenticatorId() {
 
 Return<RequestStatus> BiometricsFingerprint::cancel() {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->cancel();
+        }
         ALOGE("cancel: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }
@@ -601,6 +682,9 @@ Return<RequestStatus> BiometricsFingerprint::cancel() {
 
 Return<RequestStatus> BiometricsFingerprint::enumerate()  {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->enumerate();
+        }
         ALOGE("enumerate: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }
@@ -609,6 +693,9 @@ Return<RequestStatus> BiometricsFingerprint::enumerate()  {
 
 Return<RequestStatus> BiometricsFingerprint::remove(uint32_t gid, uint32_t fid) {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->remove(gid, fid);
+        }
         ALOGE("remove: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }
@@ -617,6 +704,10 @@ Return<RequestStatus> BiometricsFingerprint::remove(uint32_t gid, uint32_t fid) 
 
 Return<RequestStatus> BiometricsFingerprint::setActiveGroup(uint32_t gid,
         const hidl_string& storePath) {
+    if (mDevice == nullptr && mVendorHal != nullptr) {
+        // The vendor service validates the path against its own permissions.
+        return mVendorHal->setActiveGroup(gid, storePath);
+    }
     if (storePath.size() >= PATH_MAX || storePath.size() <= 0) {
         ALOGE("Bad path length: %zd", storePath.size());
         return RequestStatus::SYS_EINVAL;
@@ -640,6 +731,9 @@ Return<RequestStatus> BiometricsFingerprint::setActiveGroup(uint32_t gid,
 Return<RequestStatus> BiometricsFingerprint::authenticate(uint64_t operationId,
         uint32_t gid) {
     if (mDevice == nullptr) {
+        if (mVendorHal != nullptr) {
+            return mVendorHal->authenticate(operationId, gid);
+        }
         ALOGE("authenticate: mDevice is null, no legacy fingerprint module loaded");
         return RequestStatus::SYS_UNKNOWN;
     }

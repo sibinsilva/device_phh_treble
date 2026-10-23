@@ -89,6 +89,9 @@ private:
     std::mutex mClientCallbackMutex;
     sp<IBiometricsFingerprintClientCallback> mClientCallback;
     fingerprint_device_t *mDevice;
+    // Vendor @2.1-service object, used for the 2.1 calls when the legacy
+    // module can't be loaded here because the vendor process owns the sensor.
+    sp<::android::hardware::biometrics::fingerprint::V2_1::IBiometricsFingerprint> mVendorHal;
     sp<IGoodixFingerprintDaemon> mGoodixFingerprintDaemon;
     // Keep the vendor-specific 200001/200002/200003 protocol serialized.
     // A plain command-only queue allowed a delayed command from the previous
