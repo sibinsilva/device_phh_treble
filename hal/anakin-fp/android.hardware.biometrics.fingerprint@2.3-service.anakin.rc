@@ -11,7 +11,3 @@ service fps_hal.anakin /system/bin/hw/android.hardware.biometrics.fingerprint@2.
     group system input uhid
     writepid /dev/cpuset/system-background/tasks
     oneshot
-    # Without this, LOG(INFO)/LOG(ERROR) from this binary go nowhere (no
-    # stdout/stderr destination is attached by default), making registration
-    # failures impossible to diagnose from logcat or dmesg.
-    stdio_to_kmsg
