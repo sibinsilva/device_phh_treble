@@ -345,7 +345,8 @@ fi
 
 for part in /dev/block/bootdevice/by-name/oppodycnvbk  /dev/block/platform/bootdevice/by-name/nvdata;do
     if [ -b "$part" ];then
-        oppoName="$(grep -aohE '(RMX|CPH)[0-9]{4}' "$part" |head -n 1)"
+        # grep -a on the raw partition reads binary data as huge lines, which can stall post-fs for a long time
+        oppoName="$(strings "$part" | grep -m 1 -oE '(RMX|CPH)[0-9]{4}')"
         if [ -n "$oppoName" ];then
             setprop ro.build.overlay.deviceid "$oppoName"
         fi
