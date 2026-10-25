@@ -1,0 +1,9 @@
+
+# Qualcomm "vendor enhanced framework" flags, labelled like stock QSSI
+# (device/qcom/sepolicy/generic) so vendor HALs can read them. The ASUS camx
+# CHI override (isRunningWithVendorEnhancedFramework) only exposes the
+# logical/aux cameras when ro.vendor.qti.va_aosp.support reads true.
+vendor_restricted_prop(vendor_exported_system_prop)
+vendor_restricted_prop(vendor_exported_odm_prop)
+get_prop(domain, vendor_exported_system_prop)
+get_prop(domain, vendor_exported_odm_prop)
