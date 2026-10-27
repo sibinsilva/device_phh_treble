@@ -56,3 +56,8 @@ allow fuelgauged_nvram sysfs_dt_firmware_android:lnk_file r_file_perms;
 type hal_aidl_agolddaemon_service, service_manager_type;
 allow cameraserver hal_aidl_agolddaemon_service:service_manager find;
 binder_call(cameraserver, hal_aidl_agolddaemon_default);
+
+# silead fingerprint hal (transsion): openHal fails when it can't create its config dir (#230)
+type silead_fpd_data_file, file_type, data_file_type;
+allow hal_fingerprint_default silead_fpd_data_file:dir create_dir_perms;
+allow hal_fingerprint_default silead_fpd_data_file:file create_file_perms;
