@@ -62,4 +62,7 @@
   <string name="config_defaultAttentionService" translatable="false">com.restlessos.attention/.FaceAttentionService</string>
   <!-- role holders are exempt from the camera privacy indicator -->
   <string name="config_systemVisualIntelligence" translatable="false">com.restlessos.attention</string>
+
+  <bool name="config_supportsMicToggle">true</bool>
+  <bool name="config_supportsCamToggle">true</bool>
 </resources>
