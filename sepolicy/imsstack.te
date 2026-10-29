@@ -1,0 +1,3 @@
+allow radio platform_app:udp_socket { getattr read setopt shutdown write };
+allow radio scheduling_policy_service:service_manager find;
+r_dir_file(radio, cgroup)

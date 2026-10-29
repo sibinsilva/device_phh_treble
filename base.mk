@@ -260,6 +260,13 @@ PRODUCT_PACKAGES += \
     QualifiedNetworksService \
     MtkInCallService \
 
+# AOSP IMS stack, shipped disabled; treble_app enables it on request
+PRODUCT_PACKAGES += \
+    ImsStack \
+    ImsMediaService \
+    libimsmedia \
+    preinstalled-packages-imsmedia.xml
+
 # Two-pane layout in Settings
 $(call inherit-product, $(SRC_TARGET_DIR)/product/window_extensions.mk)
 PRODUCT_PRODUCT_PROPERTIES += \
