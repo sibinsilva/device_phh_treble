@@ -39,7 +39,12 @@ BiometricsFingerprint::BiometricsFingerprint() {
         sleep(10);
     }
     if(mOplusBiometricsFingerprint == nullptr) exit(0);
+
+    sp<::android::hidl::base::V1_0::IBase> base = mOplusBiometricsFingerprint;
+    mAospBiometricsFingerprint = IBiometricsFingerprint::castFrom(base);
+    if(mAospBiometricsFingerprint != nullptr) ALOGE("vendor HAL implements the AOSP interface, forwarding");
 }
+
 
 static bool receivedCancel;
 static bool receivedEnumerate;
@@ -156,8 +161,10 @@ private:
 Return<uint64_t> BiometricsFingerprint::setNotify(
         const sp<IBiometricsFingerprintClientCallback>& clientCallback) {
     ALOGE("setNotify");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->setNotify(clientCallback).withDefault(0);
     mOplusClientCallback = new OplusClientCallback(clientCallback);
-    return mOplusBiometricsFingerprint->setNotify(mOplusClientCallback);
+    return mOplusBiometricsFingerprint->setNotify(mOplusClientCallback).withDefault(0);
 }
 
 Return<RequestStatus> BiometricsFingerprint::OplusToAOSPRequestStatus(vendor::oplus::hardware::biometrics::fingerprint::V2_1::RequestStatus req) {
@@ -182,26 +189,36 @@ Return<RequestStatus> BiometricsFingerprint::OplusToAOSPRequestStatus(vendor::op
 
 Return<uint64_t> BiometricsFingerprint::preEnroll()  {
     ALOGE("preEnroll");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->preEnroll().withDefault(0);
     return mOplusBiometricsFingerprint->preEnroll();
 }
 
 Return<RequestStatus> BiometricsFingerprint::enroll(const hidl_array<uint8_t, 69>& hat,
     uint32_t gid, uint32_t timeoutSec)  {
     ALOGE("enroll");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->enroll(hat, gid, timeoutSec).withDefault(RequestStatus::SYS_UNKNOWN);
     return OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->enroll(hat, gid, timeoutSec));
 }
 
 Return<RequestStatus> BiometricsFingerprint::postEnroll()  {
     ALOGE("postEnroll");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->postEnroll().withDefault(RequestStatus::SYS_UNKNOWN);
     return OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->postEnroll());
 }
 
 Return<uint64_t> BiometricsFingerprint::getAuthenticatorId()  {
     ALOGE("getAuthId");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->getAuthenticatorId().withDefault(0);
     return mOplusBiometricsFingerprint->getAuthenticatorId();
 }
 
 Return<RequestStatus> BiometricsFingerprint::cancel()  {
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->cancel().withDefault(RequestStatus::SYS_UNKNOWN);
     receivedCancel = false;
     RequestStatus ret = OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->cancel());
     ALOGE("CANCELING");
@@ -216,6 +233,8 @@ Return<RequestStatus> BiometricsFingerprint::cancel()  {
 }
 
 Return<RequestStatus> BiometricsFingerprint::enumerate()  {
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->enumerate().withDefault(RequestStatus::SYS_UNKNOWN);
     receivedEnumerate = false;
     RequestStatus ret = OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->enumerate());
     ALOGE("ENUMERATING");
@@ -245,17 +264,23 @@ Return<RequestStatus> BiometricsFingerprint::enumerate()  {
 
 Return<RequestStatus> BiometricsFingerprint::remove(uint32_t gid, uint32_t fid)  {
     ALOGE("remove");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->remove(gid, fid).withDefault(RequestStatus::SYS_UNKNOWN);
     return OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->remove(gid, fid));
 }
 
 Return<RequestStatus> BiometricsFingerprint::setActiveGroup(uint32_t gid,
     const hidl_string& storePath)  {
     ALOGE("setActiveGroup");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->setActiveGroup(gid, storePath).withDefault(RequestStatus::SYS_UNKNOWN);
     return OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->setActiveGroup(gid, storePath));
 }
 
 Return<RequestStatus> BiometricsFingerprint::authenticate(uint64_t operationId, uint32_t gid)  {
     ALOGE("auth");
+    if(mAospBiometricsFingerprint != nullptr)
+        return mAospBiometricsFingerprint->authenticate(operationId, gid).withDefault(RequestStatus::SYS_UNKNOWN);
     return OplusToAOSPRequestStatus(mOplusBiometricsFingerprint->authenticate(operationId, gid));
 }
 

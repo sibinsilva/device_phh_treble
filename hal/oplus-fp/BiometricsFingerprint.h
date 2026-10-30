@@ -64,6 +64,8 @@ public:
 
 private:
     sp<vendor::oplus::hardware::biometrics::fingerprint::V2_1::IBiometricsFingerprint> mOplusBiometricsFingerprint;
+    // newer oplus HAL reuses the vendor name but extends the AOSP interface
+    sp<IBiometricsFingerprint> mAospBiometricsFingerprint;
     sp<OplusClientCallback> mOplusClientCallback;
     static Return<RequestStatus> OplusToAOSPRequestStatus(vendor::oplus::hardware::biometrics::fingerprint::V2_1::RequestStatus req);
 };
