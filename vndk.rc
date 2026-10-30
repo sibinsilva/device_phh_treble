@@ -183,6 +183,9 @@ on property:init.svc.wifidisplayhalservice=running && property:ro.product.device
 on property:persist.sys.phh.lmk_tweaks=*
     exec u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "persist.sys.phh.lmk_tweaks"
 
+on property:persist.sys.reset_push=1
+    exec_background u:r:phhsu_daemon:s0 root -- /system/bin/phh-prop-handler.sh "persist.sys.reset_push"
+
 # stock init.rc hands these to system on samsung, the gsi does not. without it
 # system_server cannot write battery_cycle and the health hal cannot set batt_type.
 on post-fs-data && property:ro.product.vendor.manufacturer=samsung

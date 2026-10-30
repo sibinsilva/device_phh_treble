@@ -298,6 +298,30 @@ if [ "$1" == "persist.bluetooth.system_audio_hal.enabled" ]; then
     exit
 fi
 
+if [ "$1" == "persist.sys.reset_push" ]; then
+    [ "$prop_value" == 1 ] || exit
+
+    # firebase keeps the push token of the gms that issued it, drop it so the
+    # app registers again with the current one
+    for token_file in /data/user/*/*/shared_prefs/com.google.android.gms.appid.xml; do
+        [ -f "$token_file" ] || continue
+
+        app_dir="$(dirname "$(dirname "$token_file")")"
+        package="$(basename "$app_dir")"
+        user_id="$(basename "$(dirname "$app_dir")")"
+
+        case "$package" in
+            com.google.android.gms|com.android.vending) continue ;;
+        esac
+
+        rm -f "$token_file"
+        am force-stop --user "$user_id" "$package"
+    done
+
+    setprop persist.sys.reset_push 2
+    exit
+fi
+
 if [ "$1" == "persist.sys.phh.lmk_tweaks" ]; then
     if [[ "$prop_value" != "false" && "$prop_value" != "true" ]]; then
         exit 1
