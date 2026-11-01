@@ -710,7 +710,7 @@ if getprop ro.vendor.build.fingerprint | grep -qE '^xiaomi/wayne/wayne.*'; then
     setprop audio.camerasound.force true
 fi
 
-if [ $(find /vendor/etc/audio -type f |wc -l) -le 3 ];then
+if [ $(find /vendor/etc/audio -type f |wc -l) -le 3 ] && [ ! -f /vendor/etc/audio/audio_module_config_primary.xml ];then
 	mount -o bind /mnt/phh/empty_dir /vendor/etc/audio || true
 fi
 
