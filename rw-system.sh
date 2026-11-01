@@ -967,6 +967,12 @@ if getprop ro.hardware.keystore | grep -iq sprd && [ -n "$vndk" ] && [ "$vndk" -
     setprop persist.sys.phh.disable_sensor_direct_report true
 fi
 
+# Sony fpc hal stops arming the sensor after a suspend mid-session
+if getprop ro.vendor.build.fingerprint | grep -iq -E -e '^Sony/' &&
+    [ -f /vendor/etc/init/fpc_fingerprint@2.1_HIDL-service.rc ]; then
+    setprop persist.sys.phh.fingerprint.restart_on_wake true
+fi
+
 # Fix manual network selection with old modem
 # https://github.com/LineageOS/android_hardware_ril/commit/e3d006fa722c02fc26acdfcaa43a3f3a1378eba9
 if getprop ro.vendor.build.fingerprint | grep -iq \
