@@ -973,6 +973,12 @@ if getprop ro.vendor.build.fingerprint | grep -iq -E -e '^Sony/' &&
     setprop persist.sys.phh.fingerprint.restart_on_wake true
 fi
 
+# Sony camera provider overruns its focus stats buffer, keep it on jemalloc like stock pie
+if getprop ro.vendor.build.fingerprint | grep -iq -E -e '^Sony/' &&
+    [ -f /vendor/bin/hw/vendor.somc.hardware.camera.provider@1.0-service ]; then
+    setprop persist.sys.phh.malloc32.jemalloc.vendor.somc.hardware.camera.provider@1.0-service true
+fi
+
 # Fix manual network selection with old modem
 # https://github.com/LineageOS/android_hardware_ril/commit/e3d006fa722c02fc26acdfcaa43a3f3a1378eba9
 if getprop ro.vendor.build.fingerprint | grep -iq \
