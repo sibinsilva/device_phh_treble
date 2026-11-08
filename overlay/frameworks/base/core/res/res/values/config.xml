@@ -26,27 +26,56 @@
 	<bool name="config_unplugTurnsOnScreen">true</bool>
 	<integer name="config_multiuserMaximumUsers">5</integer>
 	<bool name="config_enableMultiUserUI">true</bool>
+	<bool name="config_enableMultipleAdmins">true</bool>
 
 	<string name="config_dozeComponent">com.android.systemui/com.android.systemui.doze.DozeService</string>
 	<bool name="config_swipe_up_gesture_setting_available">true</bool>
 	<bool name="config_smart_battery_available">true</bool>
-	<dimen name="config_dialogCornerRadius">8.0dip</dimen>
-	<dimen name="config_buttonCornerRadius">4.0dip</dimen>
+
+	<!-- Round UI -->
+	<dimen name="config_dialogCornerRadius">28dp</dimen>
+	<dimen name="config_dialogCornerRadiusSmall">28.0dip</dimen>
+	<dimen name="config_buttonCornerRadius">28dp</dimen>
+	<dimen name="config_buttonCornerRadiusSmall">28.0dip</dimen>
+	<dimen name="rounded_slider_corner_radius">28dp</dimen>
+	<dimen name="rounded_slider_height">48dp</dimen>
+	<dimen name="rounded_slider_background_rounded_corner">28dp</dimen>
+	<dimen name="rounded_slider_track_corner_radius">28dp</dimen>
+
+	<!-- Maximum velocity to initiate a fling, as measured in dips per second. -->
+	<dimen name="config_viewMaxFlingVelocity">12000dp</dimen>
+	<!-- Minimum velocity to initiate a fling, as measured in dips per second. -->
+	<dimen name="config_viewMinFlingVelocity">600dp</dimen>
+
+	<!-- Whether safe headphone hearing is enforced by any regulation (e.g.
+	EN50332-3, EN50332-2) or not (country specific). -->
+	<bool name="config_safe_media_volume_enabled">false</bool>
+
 
 	<bool name="config_cellBroadcastAppLinks">true</bool>
 
     <array name="config_availableColorModes">
         <!-- ColorDisplayManager.COLOR_MODE_NATURAL -->
         <item>0</item>
-        <!-- ColorDisplayManager.COLOR_MODE_BOOSTED -->
-        <item>1</item>
-        <!-- ColorDisplayManager.COLOR_MODE_SATURATED -->
-        <item>2</item>
+		<!-- ColorDisplayManager.COLOR_MODE_BOOSTED -->
+		<item>1</item>
+		<!-- ColorDisplayManager.COLOR_MODE_SATURATED -->
+		<item>2</item>
         <!-- ColorDisplayManager.COLOR_MODE_AUTOMATIC -->
         <item>3</item>
     </array>
 
-    <bool name="config_supportAudioSourceUnprocessed">true</bool>
+	<!-- Whether to show min/max refresh rate in display settings -->
+	<bool name="config_show_refresh_rate_controls">true</bool>
+	<bool name="config_supports_dynamic_refresh_rate_controls">true</bool>
+
+	<!-- Whether the device supports Smart Pixels -->
+	<bool name="config_supportSmartPixels">true</bool>
+
+	<bool name="config_supportAudioSourceUnprocessed">true</bool>
+
+	<integer name="config_num_physical_slots">2</integer>
+
 
     <string-array name="config_packagesExemptFromSuspension" translatable="false">
 	    <item>me.phh.treble.app</item>
@@ -57,12 +86,4 @@
     <string name="config_wlan_network_service_package">com.google.android.iwlan</string>
   <string name="config_qualified_networks_service_package">com.android.telephony.qns</string>
   <bool name="config_lidControlsSleep">true</bool>
-
-  <bool name="config_adaptive_sleep_available">true</bool>
-  <string name="config_defaultAttentionService" translatable="false">com.restlessos.attention/.FaceAttentionService</string>
-  <!-- role holders are exempt from the camera privacy indicator -->
-  <string name="config_systemVisualIntelligence" translatable="false">com.restlessos.attention</string>
-
-  <bool name="config_supportsMicToggle">true</bool>
-  <bool name="config_supportsCamToggle">true</bool>
 </resources>
