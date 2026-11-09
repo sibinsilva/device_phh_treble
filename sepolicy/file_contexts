@@ -20,3 +20,4 @@
 
 /dev/smcinvoke u:object_r:smcinvoke_device:s0
 /system/bin/hw/android\.hardware\.bluetooth\.audio-service-system u:object_r:hal_audio_sysbta_exec:s0
+/system/bin/hw/android.hardware.biometrics.fingerprint@2.3-service.anakin u:object_r:hal_fingerprint_oppo_compat_exec:s0

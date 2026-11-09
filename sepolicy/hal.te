@@ -34,3 +34,6 @@ allow { domain -coredomain } default_prop:file { getattr open read map };
 # the stricter GSI policy blocks.
 allow vendor_init system_prop:property_service set;
 allow vendor_init default_prop:property_service set;
+
+allow hal_fingerprint_oppo_compat hwservicemanager:hwservice_manager find;
+allow hal_fingerprint_oppo_compat default_android_hwservice:hwservice_manager find;

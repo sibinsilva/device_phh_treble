@@ -1,0 +1,53 @@
+# ASUS ROG Phone 5/5s (ASUS_I005D/ASUS_I005_1) hardware fixups.
+#
+# ASUS's own vendor/etc/init/hw/init.asus.rc chowns/relabels the touch IC's
+# rise_report_rate and edge_settings attributes to system:system +
+# vendor_sysfs_touch (confirmed live via ls -laZ), letting system_app write
+# them directly - but it doesn't do the same for fts_game_mode, an apparent
+# gap in ASUS's own script. Since that's on /vendor and can't be patched
+# from here, this compensates for it on the /system side instead, matching
+# the same target ownership/mode ASUS uses for its sibling attributes.
+# Paired with the genfs_contexts relabel to vendor_sysfs_touch (same
+# sepolicy/genfs_contexts) - DAC alone isn't enough, both are needed for
+# system_app to actually be able to write it.
+#
+# Verified live: the sepolicy half of this fix landed and correctly
+# relabels fts_game_mode to vendor_sysfs_touch, but DAC ownership was still
+# root:root after boot - this file was present and its content correct, so
+# the chown/chmod actions just never actually applied. This touch IC's i2c
+# bus (990000.i2c) shows real GSI QN/xfer-timeout errors in dmesg well past
+# early boot on this unit, so the "on boot" trigger (which fires before
+# many late-probing peripherals finish) most likely ran before this
+# specific sysfs attribute existed - chown/chmod on a path that doesn't
+# exist yet silently no-ops. Moved to sys.boot_completed=1, the latest
+# point in the standard boot trigger sequence, to guarantee the node
+# exists by the time this runs.
+on property:sys.boot_completed=1
+    chown system system /sys/devices/platform/soc/990000.i2c/i2c-2/2-0038/fts_game_mode
+    chmod 0664 /sys/devices/platform/soc/990000.i2c/i2c-2/2-0038/fts_game_mode
+    restorecon /sys/devices/platform/soc/990000.i2c/i2c-2/2-0038/fts_game_mode
+
+# Screen-off / AOD fingerprint unlock. ASUS's vendor init.asus.rc writes these
+# vendor properties to the touch driver: fp.wakeup -> fts_fp_mode (fp_enable),
+# touch_control_fod -> fts_fp_ctrl_mode (fp_report_type). With both set, a
+# finger on the FOD area while the screen is off makes the driver send KEY_F
+# (mapped to WAKEUP in fts_ts.kl). Stock ASUS SystemUI drives them; here our
+# SystemUI (UdfpsController) arms it on screen off via sys.phh.oplus.fppress.fodctrl.
+on property:sys.boot_completed=1
+    setprop persist.vendor.asus.fp.wakeup true
+
+on property:sys.phh.oplus.fppress.fodctrl=*
+    setprop vendor.asus.touch_control_fod ${sys.phh.oplus.fppress.fodctrl}
+
+# ASUS Camera. On stock, the vendor camx HAL exposes 7 camera devices
+# (including the logical multi-cameras ASUS Camera opens, IDs 5 and 6);
+# here it exposed only 4. These are set by stock's Qualcomm/ASUS system
+# build and absent on ours, so set them like stock before the camera
+# provider starts. The packagelist matches stock plus ASUS Camera
+# (Camera.shouldExposeAuxCamera filters IDs >= 2 by it).
+on early-init
+    setprop ro.vendor.qti.va_aosp.support 1
+    setprop ro.vendor.qti.va_odm.support 1
+    setprop vendor.camera.aux.packagelist org.codeaurora.snapcam,android,com.android.systemui,com.asus.camera
+    setprop ro.hardware.chipname lahaina
+    setprop ro.hardware.cpuinfo sm8350

@@ -925,6 +925,10 @@ if [ ! -f /metadata/securize_disable ]; then
     copyprop ro.bootimage.build.fingerprint ro.vendor.build.fingerprint
     copyprop ro.build.fingerprint ro.vendor.build.fingerprint
     copyprop ro.system_ext.build.fingerprint ro.vendor.build.fingerprint
+    copyprop ro.product.marketname ro.vendor.product.marketname
+    copyprop ro.product.marketname ro.product.vendor.marketname
+    copyprop ro.product.marketname ro.product.odm.marketname
+    copyprop ro.product.marketname ro.vendor.asus.product.mkt_name
     copyprop ro.product.build.fingerprint ro.vendor.build.fingerprint
 
     # /product can be the GSI's own, read the device's product partition directly
@@ -1139,8 +1143,22 @@ if getprop ro.vendor.build.fingerprint | grep -q -e samsung/o1s -e samsung/t2s -
     setprop persist.sys.phh.ultrasonic_udfps true
 fi
 
-if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I006D -e ASUS_I003;then
+if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I006D -e ASUS_I005 -e ASUS_I003;then
 	setprop persist.sys.phh.fod.asus true
+	if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I005;then
+		if [ -z "$(getprop ro.product.marketname)" ];then
+			resetprop_phh ro.product.marketname "ASUS ROG Phone 5"
+		fi
+		# Do not disable the vendor @2.1-service: the same binary also
+		# publishes IGoodixFingerprintDaemon, which anakin wraps. Killing
+		# it deadlocks anakin before registerAsService() and the framework
+		# then sees no fingerprint HAL at all.
+		cp /system/etc/vintf/manifest.xml /mnt/phh/manifest.xml
+		sed -i 's/@2.1::IBiometricsFingerprint/@2.3::IBiometricsFingerprint/g' /mnt/phh/manifest.xml
+		chmod 644 /mnt/phh/manifest.xml
+		chcon u:object_r:system_file:s0 /mnt/phh/manifest.xml
+		mount -o bind /mnt/phh/manifest.xml /system/etc/vintf/manifest.xml
+	fi
 fi
 
 # For Asus usb port picker

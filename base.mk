@@ -56,6 +56,14 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     product_charger_res_images
 
+# ASUS ROG Phone 5/5s hardware fixups (see rog5-fixups.rc)
+PRODUCT_COPY_FILES += \
+    device/phh/treble/rog5-fixups.rc:system/etc/init/rog5-fixups.rc
+
+# Mainline Wi-Fi APEX data directories
+PRODUCT_COPY_FILES += \
+    device/phh/treble/files/wifi-apexdata.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/wifi-apexdata.rc
+
 # USB Audio
 PRODUCT_COPY_FILES += \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:system/etc/usb_audio_policy_configuration.xml \
@@ -202,6 +210,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.oppo.compat \
     android.hardware.biometrics.fingerprint@2.1-service.oplus.compat \
+    android.hardware.biometrics.fingerprint@2.3-service.anakin \
 
 PRODUCT_PACKAGES += \
     vr_hwc \
