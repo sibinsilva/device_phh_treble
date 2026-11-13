@@ -50,3 +50,11 @@ allow system_app sysfs_fpga_spi:file rw_file_perms;
 type sysfs_nds03, fs_type, sysfs_type;
 allow system_app sysfs_nds03:dir r_dir_perms;
 allow system_app sysfs_nds03:file r_file_perms;
+
+# ASUS ROG Phone 5/5s Aura Sync RGB (see sepolicy/genfs_contexts for the
+# matching sysfs_leds relabel of the actual MCU path). Verified live:
+# writes fail with EACCES and no avc denial (consistent with a paired
+# dontaudit) without this - setenforce 0 made the identical write succeed,
+# isolating the cause to this missing allow rather than DAC or the driver.
+allow system_app sysfs_leds:dir r_dir_perms;
+allow system_app sysfs_leds:file rw_file_perms;
