@@ -9,3 +9,14 @@ allow platform_app vendor_sysfs_graphics:dir r_dir_perms;
 allow platform_app vendor_sysfs_graphics:file r_file_perms;
 
 type vendor_sysfs_touch, fs_type, sysfs_type;
+
+# ASUS ROG Phone 5/5s AirTriggers. The stock ROGAirTrigger app (system_app)
+# configures the grip sensor through the vendor vendor.ims.airtrigger@1.2 HAL
+# (hal_airtrigger_default, registered as hal_airtrigger_hwservice). Vendor
+# policy only grants this to ASUS's own system build, so allow the lookup and
+# the binder calls both ways (the HAL reports gestures through callbacks).
+type hal_airtrigger_hwservice, hwservice_manager_type;
+type hal_airtrigger_default, domain;
+allow system_app hal_airtrigger_hwservice:hwservice_manager find;
+binder_call(system_app, hal_airtrigger_default)
+binder_call(hal_airtrigger_default, system_app)
